@@ -1,0 +1,163 @@
+name: 'dpb'
+layers {
+  name: "data"
+  type: DATA
+  top: "data"
+  data_param {
+    source: "/home/shelhamer/dpb/data/bsd500/bsd500-train-multi-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  transform_param {
+    mean_value: 109.9
+    mean_value: 112.2
+    mean_value: 93.8
+    #scale: 0.00390625
+  }
+  include: { phase: TRAIN }
+}
+layers {
+  name: "label"
+  type: DATA
+  top: "label"
+  data_param {
+    source: "/home/shelhamer/dpb/data/bsd500/bsd500-train-gt-denoise-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  include: { phase: TRAIN }
+}
+layers {
+  name: "data"
+  type: DATA
+  top: "data"
+  data_param {
+    source: "/home/shelhamer/dpb/data/bsd500/bsd500-val-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  transform_param {
+    mean_value: 109.9
+    mean_value: 112.2
+    mean_value: 93.8
+    #scale: 0.00390625
+  }
+  include: { phase: TEST }
+}
+layers {
+  name: "label"
+  type: DATA
+  top: "label"
+  data_param {
+    source: "/home/shelhamer/dpb/data/bsd500/bsd500-val-gt-union-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  include: { phase: TEST }
+}
+
+layers { bottom: 'data' top: 'conv1_1' name: 'conv1_1' type: CONVOLUTION
+  blobs_lr: 0 blobs_lr: 0 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 64 pad: 1 kernel_size: 3 } }
+layers { bottom: 'conv1_1' top: 'conv1_1' name: 'relu1_1' type: RELU }
+layers { bottom: 'conv1_1' top: 'conv1_2' name: 'conv1_2' type: CONVOLUTION
+  blobs_lr: 0 blobs_lr: 0 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 64 pad: 1 kernel_size: 3 } }
+layers { bottom: 'conv1_2' top: 'conv1_2' name: 'relu1_2' type: RELU }
+
+# stride: 2
+layers { name: 'pool1' bottom: 'conv1_2' top: 'pool1' type: POOLING
+  pooling_param { pool: MAX kernel_size: 2 stride: 2 } }
+layers { name: 'conv2_1' bottom: 'pool1' top: 'conv2_1' type: CONVOLUTION
+  blobs_lr: 0 blobs_lr: 0 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 128 pad: 1 kernel_size: 3 } }
+layers { bottom: 'conv2_1' top: 'conv2_1' name: 'relu2_1' type: RELU }
+layers { bottom: 'conv2_1' top: 'conv2_2' name: 'conv2_2' type: CONVOLUTION
+  blobs_lr: 0 blobs_lr: 0 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 128 pad: 1 kernel_size: 3 } }
+layers { bottom: 'conv2_2' top: 'conv2_2' name: 'relu2_2' type: RELU }
+
+# stride: 4
+layers { bottom: 'conv2_2' top: 'pool2' name: 'pool2' type: POOLING
+  pooling_param { pool: MAX kernel_size: 2 stride: 2 } }
+layers { bottom: 'pool2' top: 'conv3_1' name: 'conv3_1' type: CONVOLUTION
+  blobs_lr: 0 blobs_lr: 0 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 256 pad: 1 kernel_size: 3 } }
+layers { bottom: 'conv3_1' top: 'conv3_1' name: 'relu3_1' type: RELU }
+layers { bottom: 'conv3_1' top: 'conv3_2' name: 'conv3_2' type: CONVOLUTION
+  blobs_lr: 0 blobs_lr: 0 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 256 pad: 1 kernel_size: 3 } }
+layers { bottom: 'conv3_2' top: 'conv3_3' name: 'conv3_3' type: CONVOLUTION
+  blobs_lr: 0 blobs_lr: 0 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 256 pad: 1 kernel_size: 3 } }
+layers { bottom: 'conv3_3' top: 'conv3_3' name: 'relu3_3' type: RELU }
+
+## conv3
+layers { name: 'score-conv3_1' type: CONVOLUTION bottom: 'conv3_1' top: 'score-conv3_1'
+  blobs_lr: 1 blobs_lr: 2 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 2 kernel_size: 1 } }
+layers { name: 'score-conv3_2' type: CONVOLUTION bottom: 'conv3_2' top: 'score-conv3_2'
+  blobs_lr: 1 blobs_lr: 2 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 2 kernel_size: 1 } }
+layers { name: 'score-conv3_3' type: CONVOLUTION bottom: 'conv3_3' top: 'score-conv3_3'
+  blobs_lr: 1 blobs_lr: 2 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 2 kernel_size: 1 } }
+
+layers { type: ELTWISE name: 'fuse-conv3'
+  bottom: 'score-conv3_1'
+  bottom: 'score-conv3_2'
+  bottom: 'score-conv3_3'
+  top: 'score-conv3'
+  eltwise_param { operation: SUM } }
+
+layers { type: DECONVOLUTION name: 'upscore-conv3' bottom: 'score-conv3' top:'upscore-conv3'
+  blobs_lr: 0 blobs_lr: 0
+  convolution_param { num_output: 2 kernel_size: 4 stride: 2 } }
+
+layers { type: CROP name: 'crop-upscore-conv3' bottom: 'upscore-conv3' bottom: 'pool1' top: 'upscore-conv3c' }
+
+## conv2
+layers { name: 'score-conv2_1' type: CONVOLUTION bottom: 'conv2_1' top: 'score-conv2_1'
+  blobs_lr: 1 blobs_lr: 2 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 2 kernel_size: 1 } }
+layers { name: 'score-conv2_2' type: CONVOLUTION bottom: 'conv2_2' top: 'score-conv2_2'
+  blobs_lr: 1 blobs_lr: 2 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 2 kernel_size: 1 } }
+
+layers { type: ELTWISE name: 'fuse-conv2,3'
+  bottom: 'score-conv2_1'
+  bottom: 'score-conv2_2'
+  bottom: 'upscore-conv3c'
+  top: 'score-conv2,3'
+  eltwise_param { operation: SUM } }
+
+layers { type: DECONVOLUTION name: 'upscore-conv2,3' bottom: 'score-conv2,3' top:'upscore-conv2,3'
+  blobs_lr: 0 blobs_lr: 0
+  convolution_param { num_output: 2 kernel_size: 4 stride: 2 } }
+
+layers { type: CROP name: 'crop-upscore-conv2,3' bottom: 'upscore-conv2,3' bottom: 'conv1_1' top: 'upscore-conv2,3c' }
+
+## conv1
+layers { name: 'score-conv1_1' type: CONVOLUTION bottom: 'conv1_1' top: 'score-conv1_1'
+  blobs_lr: 1 blobs_lr: 2 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 2 kernel_size: 1 } }
+layers { name: 'score-conv1_2' type: CONVOLUTION bottom: 'conv1_2' top: 'score-conv1_2'
+  blobs_lr: 1 blobs_lr: 2 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 2 kernel_size: 1 } }
+
+layers { type: ELTWISE name: 'fuse-conv1,2,3'
+  bottom: 'score-conv1_1'
+  bottom: 'score-conv1_2'
+  bottom: 'upscore-conv2,3c'
+  top: 'score'
+  eltwise_param { operation: SUM } }
+
+layers { type: SOFTMAX_LOSS name: 'loss' top: 'loss'
+  bottom: 'score' bottom: 'label'
+  loss_param { ignore_label: 255 normalize: false }
+  }
+
+layers { type: SOFTMAX name: 'prob' top: 'prob' bottom: 'score'
+  include { phase: TEST } }
+layers { type: SILENCE name: 'silence' bottom: 'prob'
+  include { phase: TEST } }

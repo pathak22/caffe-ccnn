@@ -1,0 +1,56 @@
+layers {
+  name: "data"
+  type: DATA
+  top: "data"
+  data_param {
+    source: "/home/shelhamer/dpb/data/bsd500/bsd500-train-multi-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  transform_param {
+    mean_value: 109.9
+    mean_value: 112.2
+    mean_value: 93.8
+    scale: 0.00390625
+  }
+  include: { phase: TRAIN }
+}
+layers {
+  name: "label"
+  type: DATA
+  top: "label"
+  data_param {
+    source: "/home/shelhamer/dpb/data/bsd500/bsd500-train-gt-denoise-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  include: { phase: TRAIN }
+}
+layers {
+  name: "data"
+  type: DATA
+  top: "data"
+  data_param {
+    source: "/home/shelhamer/dpb/data/bsd500/bsd500-val-multi-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  transform_param {
+    mean_value: 109.9
+    mean_value: 112.2
+    mean_value: 93.8
+    scale: 0.00390625
+  }
+  include: { phase: TEST }
+}
+layers {
+  name: "label"
+  type: DATA
+  top: "label"
+  data_param {
+    source: "/home/shelhamer/dpb/data/bsd500/bsd500-val-gt-denoise-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  include: { phase: TEST }
+}

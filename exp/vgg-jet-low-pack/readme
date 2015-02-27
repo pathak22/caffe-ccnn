@@ -1,0 +1,5 @@
+jet: conv[1-3]
+pure groundtruth
+zero init
+no fine-tuning
+packed to reduce stride to pixelwise

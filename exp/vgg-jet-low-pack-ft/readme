@@ -1,0 +1,5 @@
+jet: conv1_1 to conv3_3
+packed to reduce stride all the way to one
+xavier init
+pure ground truth
+fine-tuning

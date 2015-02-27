@@ -1,0 +1,91 @@
+layers {
+  name: "data"
+  type: DATA
+  top: "data"
+  data_param {
+    source: "/home/shelhamer/dpb/data/nyud/nyud-train-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  transform_param {
+    mean_value: 116.2
+    mean_value: 97.2
+    mean_value: 92.3
+    scale: 0.00390625
+  }
+  include: { phase: TRAIN }
+}
+layers {
+  name: "hha"
+  type: DATA
+  top: "hha"
+  data_param {
+    source: "/home/shelhamer/dpb/data/nyud/nyud-train-hha-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  transform_param {
+    mean_value: 132.4
+    mean_value: 94.1
+    mean_value: 118.5
+    scale: 0.00390625
+  }
+  include: { phase: TRAIN }
+}
+layers {
+  name: "label"
+  type: DATA
+  top: "label"
+  data_param {
+    source: "/home/shelhamer/dpb/data/nyud/nyud-train-bdry-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  include: { phase: TRAIN }
+}
+
+layers {
+  name: "data"
+  type: DATA
+  top: "data"
+  data_param {
+    source: "/home/shelhamer/dpb/data/nyud/nyud-val-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  transform_param {
+    mean_value: 116.2
+    mean_value: 97.2
+    mean_value: 92.3
+    scale: 0.00390625
+  }
+  include: { phase: TEST }
+}
+layers {
+  name: "hha"
+  type: DATA
+  top: "hha"
+  data_param {
+    source: "/home/shelhamer/dpb/data/nyud/nyud-val-hha-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  transform_param {
+    mean_value: 132.4
+    mean_value: 94.1
+    mean_value: 118.5
+    scale: 0.00390625
+  }
+  include: { phase: TEST }
+}
+layers {
+  name: "label"
+  type: DATA
+  top: "label"
+  data_param {
+    source: "/home/shelhamer/dpb/data/nyud/nyud-val-bdry-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  include: { phase: TEST }
+}

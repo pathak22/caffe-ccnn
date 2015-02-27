@@ -1,0 +1,119 @@
+name: 'dpb'
+layers {
+  name: "data"
+  type: DATA
+  top: "data"
+  data_param {
+    source: "/home/shelhamer/dpb/data/bsd500/bsd500-train-multi-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  transform_param {
+    mean_value: 109.9
+    mean_value: 112.2
+    mean_value: 93.8
+    #scale: 0.00390625
+  }
+  include: { phase: TRAIN }
+}
+layers {
+  name: "label"
+  type: DATA
+  top: "label"
+  data_param {
+    source: "/home/shelhamer/dpb/data/bsd500/bsd500-train-gt-denoise-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  include: { phase: TRAIN }
+}
+layers {
+  name: "data"
+  type: DATA
+  top: "data"
+  data_param {
+    source: "/home/shelhamer/dpb/data/bsd500/bsd500-val-multi-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  transform_param {
+    mean_value: 109.9
+    mean_value: 112.2
+    mean_value: 93.8
+    #scale: 0.00390625
+  }
+  include: { phase: TEST }
+}
+layers {
+  name: "label"
+  type: DATA
+  top: "label"
+  data_param {
+    source: "/home/shelhamer/dpb/data/bsd500/bsd500-val-gt-denoise-lmdb"
+    backend: LMDB
+    batch_size: 1
+  }
+  include: { phase: TEST }
+}
+
+layers { bottom: 'data' top: 'conv1_1' name: 'conv1_1' type: CONVOLUTION
+  blobs_lr: 0 blobs_lr: 0 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 64 pad: 8 kernel_size: 3 } }
+layers { bottom: 'conv1_1' top: 'conv1_1' name: 'relu1_1' type: RELU }
+layers { bottom: 'conv1_1' top: 'conv1_2' name: 'conv1_2' type: CONVOLUTION
+  blobs_lr: 0 blobs_lr: 0 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 64 pad: 1 kernel_size: 3 } }
+layers { bottom: 'conv1_2' top: 'conv1_2' name: 'relu1_2' type: RELU }
+
+# stride: 2
+layers { name: 'pool1' bottom: 'conv1_2' top: 'pool1' type: POOLING
+  pooling_param { pool: MAX kernel_size: 2 stride: 1 } }
+layers { bottom: 'pool1' top: 'pool1p' name: 'pack1' type: REPACK
+  repack_param { stride: 2 operation: PACK_IMAGE } }
+layers { name: 'conv2_1' bottom: 'pool1p' top: 'conv2_1' type: CONVOLUTION
+  blobs_lr: 0 blobs_lr: 0 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 128 pad: 1 kernel_size: 3 } }
+layers { bottom: 'conv2_1' top: 'conv2_1' name: 'relu2_1' type: RELU }
+layers { bottom: 'conv2_1' top: 'conv2_2' name: 'conv2_2' type: CONVOLUTION
+  blobs_lr: 0 blobs_lr: 0 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 128 pad: 1 kernel_size: 3 } }
+layers { bottom: 'conv2_2' top: 'conv2_2' name: 'relu2_2' type: RELU }
+
+# stride: 4
+layers { bottom: 'conv2_2' top: 'pool2' name: 'pool2' type: POOLING
+  pooling_param { pool: MAX kernel_size: 2 stride: 1 } }
+layers { bottom: 'pool2' top: 'pool2p' name: 'pack2' type: REPACK
+  repack_param { stride: 2 operation: PACK_IMAGE } }
+layers { bottom: 'pool2p' top: 'conv3_1' name: 'conv3_1' type: CONVOLUTION
+  blobs_lr: 0 blobs_lr: 0 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 256 pad: 1 kernel_size: 3 } }
+layers { bottom: 'conv3_1' top: 'conv3_1' name: 'relu3_1' type: RELU }
+layers { bottom: 'conv3_1' top: 'conv3_2' name: 'conv3_2' type: CONVOLUTION
+  blobs_lr: 0 blobs_lr: 0 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 256 pad: 1 kernel_size: 3 } }
+layers { bottom: 'conv3_2' top: 'conv3_3' name: 'conv3_3' type: CONVOLUTION
+  blobs_lr: 0 blobs_lr: 0 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 256 pad: 1 kernel_size: 3 } }
+layers { bottom: 'conv3_3' top: 'conv3_3' name: 'relu3_3' type: RELU }
+layers { bottom: 'conv3_3' top: 'unpack2' name: 'unpack2' type: REPACK
+  repack_param { stride: 2 operation: UNPACK_IMAGE } }
+layers { bottom: 'unpack2' top: 'unpack1' name: 'unpack1' type: REPACK
+  repack_param { stride: 2 operation: UNPACK_IMAGE } }
+
+# scoring
+layers { name: 'score' type: CONVOLUTION bottom: 'unpack1' top: 'score'
+  blobs_lr: 1 blobs_lr: 2 weight_decay: 1 weight_decay: 0
+  convolution_param { engine: CAFFE num_output: 2 kernel_size: 1 weight_filler { type: 'xavier' } } }
+
+layers { type: CROP name: 'crop' bottom: 'score' bottom: 'data' top: 'scorec' }
+
+layers { type: SOFTMAX_LOSS name: 'loss' top: 'loss'
+  bottom: 'scorec' bottom: 'label'
+  loss_param { ignore_label: 255 normalize: false } }
+
+layers { type: SOFTMAX name: 'prob' top: 'prob'
+  bottom: 'scorec'
+  include: { phase: TEST } }
+
+layers { type: SILENCE name: 'silence-prob' bottom: 'prob'
+  include: { phase: TEST } }

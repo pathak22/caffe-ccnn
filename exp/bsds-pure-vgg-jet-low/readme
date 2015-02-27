@@ -1,0 +1,4 @@
+jet: conv1_1 to conv3_3
+xavier init
+pure ground truth
+no fine-tuning
