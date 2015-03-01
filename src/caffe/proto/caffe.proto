@@ -574,6 +574,18 @@ message InnerProductParameter {
   optional int32 axis = 5 [default = 1];
 }
 
+message LossStatisticParameter {
+  optional bool soft = 1 [default = true]; // Should we compute the softmax or hardmax loss
+}
+message StatisticalLossParameter {
+  enum Loss {
+    HAMMING,
+    INTERSECTION_OVER_UNION
+  }
+  optional Loss loss = 1 [default = HAMMING];
+  optional float weight_pow = 2 [default = 0]; // Weight each class by pow(1/(class_freq),weight_pow)
+}
+
 // Message that stores parameters used by LRNLayer
 message LRNParameter {
   optional uint32 local_size = 1 [default = 5];
