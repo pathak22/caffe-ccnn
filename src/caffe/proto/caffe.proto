@@ -326,6 +326,7 @@ message LayerParameter {
   optional PReLUParameter prelu_param = 131;
   optional PythonParameter python_param = 130;
   optional ReLUParameter relu_param = 123;
+  optional RunningAverageParameter running_average_param = 1000;
   optional SigmoidParameter sigmoid_param = 124;
   optional SoftmaxParameter softmax_param = 125;
   optional SliceParameter slice_param = 126;
@@ -682,6 +683,13 @@ message ReLUParameter {
   optional Engine engine = 2 [default = DEFAULT];
 }
 
+// Message that stores parameters used by RunningAverageLayer
+message RunningAverageParameter {
+  // Computes a running average y^t := x + alpha * y^{t-1}
+  // with y^0 = initial_value
+  optional float alpha = 1 [default = 0.9];
+  optional float initial_value = 2 [default = 0.0];
+}
 // Message that stores parameters used by SigmoidLayer
 message SigmoidParameter {
   enum Engine {

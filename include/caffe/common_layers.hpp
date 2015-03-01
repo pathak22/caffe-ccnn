@@ -16,6 +16,56 @@
 namespace caffe {
 
 /**
+ * @brief Compute a running average of the bottom data as:
+ *        average' = top = bottom + alpha * average
+ *
+ */
+template <typename Dtype>
+class RunningAverageLayer : public Layer<Dtype> {
+ public:
+  /**
+   * @param param provides RunningAverageParameter running_average_param,
+   *     with RunningAverageLayer options:
+   *   - alpha (\b optional float, default 0.9).
+   *     the discount factor for the running average
+   *   - initial_value (\b optional float, default 0.0).
+   *     Initial value for the running average
+   */
+  explicit RunningAverageLayer(const LayerParameter& param)
+      : Layer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "RunningAverage"; }
+  virtual inline int ExactNumBottomBlobs() const { return 1; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
+
+ protected:
+  /**
+   * @param bottom input Blob vector (length 1)
+   *   -# @f$ (N \times C \times H \times W) @f$
+   *      the inputs @f$ x @f$
+   * @param top output Blob vector (length 1)
+   *   -# @f$ (1 \times C \times H \times W) @f$
+   *      the computed outputs @f$
+   *       y_n^t = x_{n} + \alpha y_n^{t-1}
+   *      @f$, width @f$ y_n^0 = \mathrm{initial_value} @f$
+   */
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  Dtype alpha_;
+  Blob<Dtype> average_;
+};
+
+/**
  * @brief Compute the index of the @f$ K @f$ max values for each datum across
  *        all dimensions @f$ (C \times H \times W) @f$.
  *
