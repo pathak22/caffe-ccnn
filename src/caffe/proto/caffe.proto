@@ -575,7 +575,13 @@ message InnerProductParameter {
 }
 
 message LossStatisticParameter {
-  optional bool soft = 1 [default = true]; // Should we compute the softmax or hardmax loss
+  optional int32 ignore_label = 1;
+  // Should we compute the softmax or hardmax loss
+  enum MaxType {
+    SOFT_MAX,
+    HARD_MAX
+  }
+  optional MaxType max_type = 2 [default = SOFT_MAX];
 }
 message StatisticalLossParameter {
   enum Loss {

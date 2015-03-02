@@ -119,6 +119,48 @@ class LossLayer : public Layer<Dtype> {
 };
 
 /**
+ * @brief Compute a loss statistic: which ground truth label was predicted
+ *        as what label. Allows for both soft and hard predictions.
+ *
+ * LossStatisticLayer is only capable of backpropagating to its first input
+ * -- the predictions, and only of SOFT_MAX predictions are used.
+ */
+template <typename Dtype>
+class LossStatisticLayer : public Layer<Dtype> {
+ public:
+   /**
+    * @param param provides LossStatisticParameter loss_statistic_param,
+    *        with options:
+    *  - ignore_label (optional)
+    *    Specify a label value that should be ignored when computing the loss.
+    *  - max_type (optional, default SOFT_MAX)
+    *    Should we use a SOFT_MAX or HARD_MAX loss.
+    */
+  explicit LossStatisticLayer(const LayerParameter& param)
+     : Layer<Dtype>(param) {}
+  virtual void LayerSetUp(
+      const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(
+      const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+
+  virtual inline int ExactNumBottomBlobs() const { return 2; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
+  /**
+   * We usually cannot backpropagate to the labels; ignore force_backward for
+   * these inputs.
+   */
+  virtual inline bool AllowForceBackward(const int bottom_index) const {
+    return bottom_index != 1;
+  }
+
+ protected:
+  /// Whether to ignore instances with a certain label.
+  bool has_ignore_label_;
+  /// The label indicating that an instance should be ignored.
+  int ignore_label_;
+};
+
+/**
  * @brief Computes the contrastive loss @f$
  *          E = \frac{1}{2N} \sum\limits_{n=1}^N \left(y\right) d +
  *              \left(1-y\right) \max \left(margin-d, 0\right)
