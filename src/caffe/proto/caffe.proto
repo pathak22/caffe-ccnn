@@ -318,6 +318,7 @@ message LayerParameter {
   optional ImageDataParameter image_data_param = 115;
   optional InfogainLossParameter infogain_loss_param = 116;
   optional InnerProductParameter inner_product_param = 117;
+  optional LossStatisticParameter loss_statistic_param = 132;
   optional LRNParameter lrn_param = 118;
   optional MemoryDataParameter memory_data_param = 119;
   optional MVNParameter mvn_param = 120;
@@ -578,15 +579,15 @@ message LossStatisticParameter {
   optional int32 ignore_label = 1;
   // Should we compute the softmax or hardmax loss
   enum MaxType {
-    SOFT_MAX,
-    HARD_MAX
+    SOFT_MAX = 0;
+    HARD_MAX = 1;
   }
   optional MaxType max_type = 2 [default = SOFT_MAX];
 }
 message StatisticalLossParameter {
   enum Loss {
-    HAMMING,
-    INTERSECTION_OVER_UNION
+    HAMMING = 0;
+    INTERSECTION_OVER_UNION = 1;
   }
   optional Loss loss = 1 [default = HAMMING];
   optional float weight_pow = 2 [default = 0]; // Weight each class by pow(1/(class_freq),weight_pow)
