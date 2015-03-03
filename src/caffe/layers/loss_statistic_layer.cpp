@@ -41,6 +41,8 @@ class HardmaxLayer: public Layer<Dtype> {
             imx_data[k] = j;
             mx_data[k] = bottom_data[i * dim + j * spatial_dim + k];
           }
+      for (int k = 0; k < spatial_dim; k++)
+        top_data[ (int)imx_data[k] ] += 1;
     }
   }
   void Backward_cpu(const vector<Blob<Dtype>*>& top,
