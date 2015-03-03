@@ -88,6 +88,7 @@ void LossStatisticLayer<Dtype>::Reshape(
     "Bottom height's need to match";
   int nc = bottom[0]->channels();
   top[0]->Reshape(bottom[0]->num(), 1, nc, nc);
+  max_layer_->Reshape(max_bottom_vec_, max_top_vec_);
 }
 
 template <typename Dtype>
