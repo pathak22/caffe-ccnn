@@ -135,10 +135,7 @@ void LossStatisticLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     for (int i = 0; i < num; i++)
       for (int j = 0; j < spatial_dim; j++) {
         const int label_value = static_cast<int>(label[i * spatial_dim + j]);
-        if (has_ignore_label_ && label_value == ignore_label_) {
-          for (int c = 0; c < bottom[0]->channels(); ++c)
-            prob_diff[i * dim + c * spatial_dim + j] = 0;
-        } else {
+        if (!has_ignore_label_ || label_value != ignore_label_) {
           for (int c = 0; c < bottom[0]->channels(); ++c)
             prob_diff[i * dim + c * spatial_dim + j] +=
               top_diff[i * nc * nc + label_value * nc + c];
