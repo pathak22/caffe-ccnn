@@ -13,3 +13,4 @@ Consider adding
 
 - https://github.com/BVLC/caffe/pull/1977 for saving memory
 - https://github.com/BVLC/caffe/pull/1733 for pycaffe net specification
+- https://github.com/BVLC/caffe/pull/2016 for saving memory during test time

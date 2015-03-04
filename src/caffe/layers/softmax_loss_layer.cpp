@@ -28,6 +28,11 @@ void SoftmaxWithLossLayer<Dtype>::LayerSetUp(
     ignore_label_ = this->layer_param_.loss_param().ignore_label();
   }
   normalize_ = this->layer_param_.loss_param().normalize();
+
+  weigh_instance_ = this->layer_param_.loss_param().weigh_instance();
+  if (weigh_instance_) {
+    background_weight_ = this->layer_param_.loss_param().background_weight();
+  }
 }
 
 template <typename Dtype>
@@ -61,8 +66,15 @@ void SoftmaxWithLossLayer<Dtype>::Forward_cpu(
       }
       DCHECK_GE(label_value, 0);
       DCHECK_LT(label_value, prob_.channels());
-      loss -= log(std::max(prob_data[i * dim + label_value * spatial_dim + j],
+
+      if (weigh_instance_ && label_value == 0) {
+        loss -= (log(std::max(prob_data[i * dim + label_value * spatial_dim + j],
+                           Dtype(FLT_MIN))) * background_weight_);
+      } else {
+        loss -= log(std::max(prob_data[i * dim + label_value * spatial_dim + j],
                            Dtype(FLT_MIN)));
+      }
+
       ++count;
     }
   }
@@ -102,6 +114,13 @@ void SoftmaxWithLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
         } else {
           bottom_diff[i * dim + label_value * spatial_dim + j] -= 1;
           ++count;
+
+          if (weigh_instance_ && label_value == 0) {
+            for (int c = 0; c < bottom[0]->channels(); ++c) {
+              bottom_diff[i * dim + c * spatial_dim + j] *= background_weight_;
+            }  
+          }
+
         }
       }
     }

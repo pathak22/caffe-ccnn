@@ -754,6 +754,12 @@ class SoftmaxWithLossLayer : public LossLayer<Dtype> {
   /// Whether to normalize the loss by the total number of values present
   /// (otherwise just by the batch size).
   bool normalize_;
+
+
+  /// This is just a flag to turn on the hack to weigh the classes. 
+  /// Currently, it is implemented to weigh only unbalanced background class.
+  bool weigh_instance_;
+  Dtype background_weight_;
 };
 
 }  // namespace caffe

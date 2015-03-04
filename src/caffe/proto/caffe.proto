@@ -348,6 +348,12 @@ message LossParameter {
   // If true, normalize each batch across all instances (including spatial
   // dimesions, but not ignored instances); else, divide by batch size only.
   optional bool normalize = 2 [default = true];
+
+  // If true, the hack in SoftmaxWithLossLayer file becomes active which
+  // weighs the classes. Currently it is implemented only for background class
+  // with the given weight.
+  optional bool weigh_instance = 3 [default = false];
+  optional float background_weight = 4;
 }
 
 // Message that stores parameters used by AccuracyLayer
