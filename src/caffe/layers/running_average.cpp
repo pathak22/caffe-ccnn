@@ -46,8 +46,8 @@ void RunningAverageLayer<Dtype>::Forward_cpu(
 }
 template <typename Dtype>
 void RunningAverageLayer<Dtype>::Backward_cpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& top) {
+    const vector<Blob<Dtype>*>& top, const vector<bool>& propagate_down,
+    const vector<Blob<Dtype>*>& bottom) {
   if (!propagate_down[0]) return;
   const Dtype* top_diff = top[0]->cpu_diff();
   Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
@@ -76,8 +76,8 @@ void RunningAverageLayer<Dtype>::Forward_gpu(
 }
 template <typename Dtype>
 void RunningAverageLayer<Dtype>::Backward_gpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& top) {
+    const vector<Blob<Dtype>*>& top, const vector<bool>& propagate_down,
+    const vector<Blob<Dtype>*>& bottom) {
   if (!propagate_down[0]) return;
   const Dtype* top_diff = top[0]->gpu_diff();
   Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
