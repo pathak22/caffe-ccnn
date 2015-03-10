@@ -72,7 +72,7 @@ void RunningAverageLayer<Dtype>::Forward_gpu(
   caffe_gpu_scal(dim, alpha_, average_data);
   for (int i = 0; i < num; i++)
     caffe_gpu_add(dim, average_data, bottom_data+i*dim, average_data);
-  caffe_gpu_memcpy(dim*sizeof(Dtype), average_data, top_data);
+  caffe_copy(dim, average_data, top_data);
 }
 template <typename Dtype>
 void RunningAverageLayer<Dtype>::Backward_gpu(
@@ -84,7 +84,7 @@ void RunningAverageLayer<Dtype>::Backward_gpu(
   int num = bottom[0]->num();
   int dim = average_.count();
   for (int i = 0; i < num; i++)
-    caffe_gpu_memcpy(dim*sizeof(Dtype), top_diff, bottom_diff+i*dim);
+    caffe_copy(dim, top_diff, bottom_diff+i*dim);
 }
 
 #endif
