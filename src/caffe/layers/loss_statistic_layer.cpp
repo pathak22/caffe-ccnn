@@ -10,6 +10,10 @@
 namespace caffe {
 
 template <typename Dtype>
+void HardmaxLayer_Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top);
+
+template <typename Dtype>
 class HardmaxLayer: public Layer<Dtype> {
  public:
   explicit HardmaxLayer(const LayerParameter& param)
@@ -42,8 +46,12 @@ class HardmaxLayer: public Layer<Dtype> {
             mx_data[k] = bottom_data[i * dim + j * spatial_dim + k];
           }
       for (int k = 0; k < spatial_dim; k++)
-        top_data[ (int)imx_data[k] ] += 1;
+        top_data[ i * dim + ((int)imx_data[k]) * spatial_dim + k ] += 1;
     }
+  }
+  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
+    HardmaxLayer_Forward_gpu( bottom, top );
   }
   void Backward_cpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down,
