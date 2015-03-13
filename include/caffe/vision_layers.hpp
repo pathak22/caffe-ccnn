@@ -525,7 +525,7 @@ class RepackLayer : public Layer<Dtype> {
   virtual inline DiagonalAffineMap<Dtype> coord_map() {
     DiagonalAffineMap<Dtype> r = FilterMap<Dtype>(0, 0, this->stride_h_,
                                                   this->stride_w_, 0, 0);
-    if( operation_ == RepackParameter_Operation_PACK_IMAGE )
+    if (operation_ == RepackParameter_Operation_PACK_IMAGE)
       return r.inv();
     return r;
   }
