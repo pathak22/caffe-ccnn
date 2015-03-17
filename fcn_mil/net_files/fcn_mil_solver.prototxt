@@ -1,0 +1,33 @@
+# Learning when loss is normalized -------------------------------
+# ---------------------------------------------------------------
+net: "/home/pathak/caffe_fcn_mil/fcn_mil/net_files/fcn_mil.prototxt"
+# test_iter: 736
+# test_interval: 500
+base_lr: 0.0001
+lr_policy: "step"
+gamma: 0.1
+stepsize: 20000
+display: 20
+max_iter: 100000
+iter_size: 20
+momentum: 0.9
+weight_decay: 0.0005
+snapshot: 500
+# test_initialization: false
+snapshot_prefix: "/mnt/a/pathak/fcn_mil_cache/exp-caffemodels/fcn_mil_minus4_em"
+# ---------------------------------------------------------------
+
+# High Momentum Learning when loss is not normalized -----------
+# ---------------------------------------------------------------
+# net: "/home/pathak/caffe_fcn_mil/fcn_mil/net_files/fcn_mil.prototxt"
+# base_lr: 0.00000000001
+# lr_policy: "fixed"
+# gamma: 0.1
+# display: 200
+# max_iter: 500000
+# iter_size: 1
+# momentum: 0.99
+# weight_decay: 0.0005
+# snapshot: 10000
+# snapshot_prefix: "/mnt/a/pathak/fcn_mil_cache/exp-caffemodels/fcn_mil_minus11_v3"
+# ---------------------------------------------------------------

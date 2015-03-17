@@ -1,0 +1,13 @@
+net: "/home/pathak/caffe_fcn_mil/fcn_mil/net_files/fcn_classification.prototxt"
+test_iter: 175
+test_interval: 500
+base_lr: 0.001
+lr_policy: "step"
+gamma: 0.1
+stepsize: 50000
+display: 20
+max_iter: 100000
+momentum: 0.9
+weight_decay: 0.0005
+snapshot: 1000
+snapshot_prefix: "/mnt/a/pathak/fcn_mil_cache/exp-caffemodels/fcn_classification_001"

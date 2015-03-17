@@ -762,6 +762,64 @@ class SoftmaxWithLossLayer : public LossLayer<Dtype> {
   Dtype background_weight_;
 };
 
+
+// Generic MIL Loss Layer
+
+template <typename Dtype>
+class MILLossLayer : public LossLayer<Dtype> {
+ public:
+   /**
+    * @param param provides LossParameter loss_param, with options:
+    *  - ignore_label (optional)
+    *    Specify a label value that should be ignored when computing the loss.
+    *  - normalize (optional, default true)
+    *    If true, the loss is normalized by the number of (nonignored) labels
+    *    present; otherwise the loss is simply summed over spatial locations.
+    */
+  explicit MILLossLayer(const LayerParameter& param)
+      : LossLayer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "MILLoss"; }
+  virtual inline int ExactNumTopBlobs() const { return -1; }
+  virtual inline int MinTopBlobs() const { return 1; }
+  virtual inline int MaxTopBlobs() const { return 2; }
+
+ protected:
+  /// @copydoc MILLossLayer
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+
+  /// The internal SoftmaxLayer used to map predictions to a distribution.
+  shared_ptr<Layer<Dtype> > softmax_layer_;
+  /// prob stores the output probability predictions from the SoftmaxLayer.
+  Blob<Dtype> prob_;
+  /// bottom vector holder used in call to the underlying SoftmaxLayer::Forward
+  vector<Blob<Dtype>*> softmax_bottom_vec_;
+  /// top vector holder used in call to the underlying SoftmaxLayer::Forward
+  vector<Blob<Dtype>*> softmax_top_vec_;
+  /// Whether to ignore instances with a certain label.
+  bool has_ignore_label_;
+  /// The label indicating that an instance should be ignored.
+  int ignore_label_;
+  /// Whether to normalize the loss by the total number of values present
+  /// (otherwise just by the batch size).
+  bool normalize_;
+
+
+  /// Adapted (i.e. biased) bottom[0] score values. It is just to find labels.
+  Blob<Dtype> adapted_bottom_;
+  /// Inferred latent pixel level labels
+  vector<int> latent_label_;
+  /// Function to infer pixel level latent labels
+  virtual void InferLatentLabel(const vector<Blob<Dtype>*>& bottom);
+};
+
 }  // namespace caffe
 
 #endif  // CAFFE_LOSS_LAYERS_HPP_
