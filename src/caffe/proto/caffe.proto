@@ -261,7 +261,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 132 (last added: prelu_param)
+// LayerParameter next available layer-specific ID: 133 (last added: repack_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -320,6 +320,7 @@ message LayerParameter {
   optional ImageDataParameter image_data_param = 115;
   optional InfogainLossParameter infogain_loss_param = 116;
   optional InnerProductParameter inner_product_param = 117;
+  optional LossStatisticParameter loss_statistic_param = 1002;
   optional LRNParameter lrn_param = 118;
   optional MemoryDataParameter memory_data_param = 119;
   optional MVNParameter mvn_param = 120;
@@ -328,9 +329,12 @@ message LayerParameter {
   optional PReLUParameter prelu_param = 131;
   optional PythonParameter python_param = 130;
   optional ReLUParameter relu_param = 123;
+  optional RepackParameter repack_param = 1001;
+  optional RunningAverageParameter running_average_param = 1000;
   optional SigmoidParameter sigmoid_param = 124;
   optional SoftmaxParameter softmax_param = 125;
   optional SliceParameter slice_param = 126;
+  optional StatisticalLossParameter statistical_loss_param = 1003;
   optional TanHParameter tanh_param = 127;
   optional ThresholdParameter threshold_param = 128;
   optional WindowDataParameter window_data_param = 129;
@@ -600,6 +604,24 @@ message InnerProductParameter {
   optional int32 axis = 5 [default = 1];
 }
 
+message LossStatisticParameter {
+  optional int32 ignore_label = 1;
+  // Should we compute the softmax or hardmax loss
+  enum MaxType {
+    SOFT_MAX = 0;
+    HARD_MAX = 1;
+  }
+  optional MaxType max_type = 2 [default = SOFT_MAX];
+}
+message StatisticalLossParameter {
+  enum Loss {
+    HAMMING = 0;
+    INTERSECTION_OVER_UNION = 1;
+  }
+  optional Loss loss = 1 [default = HAMMING];
+  optional float weight_pow = 2 [default = 0]; // Weight each class by pow(1/(class_freq),weight_pow)
+}
+
 // Message that stores parameters used by LRNLayer
 message LRNParameter {
   optional uint32 local_size = 1 [default = 5];
@@ -690,6 +712,25 @@ message ReLUParameter {
   optional Engine engine = 2 [default = DEFAULT];
 }
 
+// Message that stores parameters used by RepackLayer
+message RepackParameter {
+  enum Operation {
+    PACK_IMAGE = 0;
+    UNPACK_IMAGE = 1;
+  }
+  optional Operation operation = 1 [default = PACK_IMAGE];
+  optional uint32 stride = 2 [default = 1]; // The stride (equal in Y, X)
+  optional uint32 stride_h = 3; // The stride height
+  optional uint32 stride_w = 4; // The stride width
+}
+
+// Message that stores parameters used by RunningAverageLayer
+message RunningAverageParameter {
+  // Computes a running average y^t := x + alpha * y^{t-1}
+  // with y^0 = initial_value
+  optional float alpha = 1 [default = 0.9];
+  optional float initial_value = 2 [default = 0.0];
+}
 // Message that stores parameters used by SigmoidLayer
 message SigmoidParameter {
   enum Engine {

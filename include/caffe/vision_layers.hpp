@@ -13,6 +13,7 @@
 #include "caffe/loss_layers.hpp"
 #include "caffe/neuron_layers.hpp"
 #include "caffe/proto/caffe.pb.h"
+#include "caffe/tempmem.hpp"
 
 namespace caffe {
 
@@ -107,7 +108,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   int col_offset_;
   int output_offset_;
 
-  Blob<Dtype> col_buffer_;
+  TemporaryMemory<Dtype> col_buffer_;
   Blob<Dtype> bias_multiplier_;
 };
 
@@ -498,6 +499,54 @@ class CropLayer : public Layer<Dtype> {
   int crop_h_, crop_w_;
 };
 
+/*
+ * @brief Rearranges the input blobs, by samping every n-th pixel, and 
+ *        stacking them along the 'num' dimension.
+ *
+ * Use this layer if you want to compute use fully convolutional network and
+ * overlapping pooling regions. For example change a pooling region of
+ * stride:2 to stride:1 and add a repack layer with stride:2. Then add an
+ * unpack layer to the end of the network. Always repack the topmost pooling
+ * operation first, then lower ones. This allows you to run the VGG network with
+ * a 4 x 4 top level stride, in only 2.5-3 times the computational time.
+*/
+template <typename Dtype>
+class RepackLayer : public Layer<Dtype> {
+ public:
+  explicit RepackLayer(const LayerParameter& param)
+      : Layer<Dtype>(param) {}
+
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "Repack"; }
+  virtual inline int ExactNumBottomBlobs() const { return 1; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
+  virtual inline DiagonalAffineMap<Dtype> coord_map() {
+    DiagonalAffineMap<Dtype> r = FilterMap<Dtype>(0, 0, this->stride_h_,
+                                                  this->stride_w_, 0, 0);
+    if (operation_ == RepackParameter_Operation_PACK_IMAGE)
+      return r.inv();
+    return r;
+  }
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+
+  int stride_w_, stride_h_;
+  RepackParameter_Operation operation_;
+};
+
 }  // namespace caffe
+
 
 #endif  // CAFFE_VISION_LAYERS_HPP_

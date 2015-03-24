@@ -7,6 +7,7 @@
 #include <boost/python.hpp>
 #include <boost/python/raw_function.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <google/protobuf/text_format.h>
 #include <numpy/arrayobject.h>
 
 // these need to be included after boost on OS X
@@ -136,6 +137,14 @@ Solver<Dtype>* GetSolverFromFile(const string& filename) {
   ReadProtoFromTextFileOrDie(filename, &param);
   return GetSolver<Dtype>(param);
 }
+Solver<Dtype>* GetSolverFromString(const string& proto_txt) {
+  using google::protobuf::TextFormat;
+  SolverParameter param;
+  bool success = TextFormat::ParseFromString(proto_txt, &param);
+  if (!success)
+    LOG(FATAL) << "Malformatted proto_txt string";
+  return GetSolver<Dtype>(param);
+}
 
 struct NdarrayConverterGenerator {
   template <typename T> struct apply;
@@ -190,9 +199,36 @@ bp::object Blob_Reshape(bp::tuple args, bp::dict kwargs) {
   return bp::object();
 }
 
+class PythonLogSink: public google::LogSink {
+  int log_level_;
+
+ public:
+  explicit PythonLogSink(int log_level):log_level_(log_level) {}
+  virtual void send(google::LogSeverity severity, const char* full_filename,
+                    const char* base_filename, int line,
+                    const struct ::tm* tm_time,
+                    const char* message, size_t message_len) {
+    if (log_level_ >= severity) {
+      std::string msg = ToString(severity, base_filename, line, tm_time,
+                                 message, message_len);
+      PySys_WriteStderr("%s\n", msg.c_str());
+    }
+  }
+};
+static void setupGLOG() {
+  // Initialize the google logging
+  ::google::InitGoogleLogging("");
+  // Log to python friendly output
+  static PythonLogSink log_sink(FLAGS_stderrthreshold);
+  ::google::AddLogSink(&log_sink);
+  // "Disable" stderr log
+  FLAGS_stderrthreshold = ::google::FATAL;
+}
+
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(SolveOverloads, Solve, 0, 1);
 
 BOOST_PYTHON_MODULE(_caffe) {
+  setupGLOG();
   // below, we prepend an underscore to methods that will be replaced
   // in Python
   // Caffe utility functions
@@ -275,6 +311,8 @@ BOOST_PYTHON_MODULE(_caffe) {
         "AdaGradSolver", bp::init<string>());
 
   bp::def("get_solver", &GetSolverFromFile,
+      bp::return_value_policy<bp::manage_new_object>());
+  bp::def("get_solver_from_string", &GetSolverFromString,
       bp::return_value_policy<bp::manage_new_object>());
 
   // vector wrappers for all the vector types we use
