@@ -318,6 +318,7 @@ message LayerParameter {
   optional ImageDataParameter image_data_param = 115;
   optional InfogainLossParameter infogain_loss_param = 116;
   optional InnerProductParameter inner_product_param = 117;
+  optional LossStatisticParameter loss_statistic_param = 1001;
   optional LRNParameter lrn_param = 118;
   optional MemoryDataParameter memory_data_param = 119;
   optional MVNParameter mvn_param = 120;
@@ -331,6 +332,7 @@ message LayerParameter {
   optional SigmoidParameter sigmoid_param = 124;
   optional SoftmaxParameter softmax_param = 125;
   optional SliceParameter slice_param = 126;
+  optional StatisticalLossParameter statistical_loss_param = 1002;
   optional TanHParameter tanh_param = 127;
   optional ThresholdParameter threshold_param = 128;
   optional WindowDataParameter window_data_param = 129;
@@ -592,6 +594,24 @@ message InnerProductParameter {
   // all preceding axes are retained in the output.
   // May be negative to index from the end (e.g., -1 for the last axis).
   optional int32 axis = 5 [default = 1];
+}
+
+message LossStatisticParameter {
+  optional int32 ignore_label = 1;
+  // Should we compute the softmax or hardmax loss
+  enum MaxType {
+    SOFT_MAX = 0;
+    HARD_MAX = 1;
+  }
+  optional MaxType max_type = 2 [default = SOFT_MAX];
+}
+message StatisticalLossParameter {
+  enum Loss {
+    HAMMING = 0;
+    INTERSECTION_OVER_UNION = 1;
+  }
+  optional Loss loss = 1 [default = HAMMING];
+  optional float weight_pow = 2 [default = 0]; // Weight each class by pow(1/(class_freq),weight_pow)
 }
 
 // Message that stores parameters used by LRNLayer
