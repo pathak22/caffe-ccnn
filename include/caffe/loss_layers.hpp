@@ -78,7 +78,14 @@ class AccuracyLayer : public Layer<Dtype> {
     }
   }
 
+  int label_axis_, outer_num_, inner_num_;
+
   int top_k_;
+
+  /// Whether to ignore instances with a certain label.
+  bool has_ignore_label_;
+  /// The label indicating that an instance should be ignored.
+  int ignore_label_;
 };
 
 /**
@@ -754,7 +761,7 @@ class SoftmaxWithLossLayer : public LossLayer<Dtype> {
   /// Whether to normalize the loss by the total number of values present
   /// (otherwise just by the batch size).
   bool normalize_;
-
+  int softmax_axis_, outer_num_, inner_num_;
 
   /// This is just a flag to turn on the hack to weigh the classes. 
   /// Currently, it is implemented to weigh only unbalanced background class.
@@ -810,7 +817,7 @@ class MILLossLayer : public LossLayer<Dtype> {
   /// Whether to normalize the loss by the total number of values present
   /// (otherwise just by the batch size).
   bool normalize_;
-
+  int softmax_axis_, outer_num_, inner_num_;
 
   /// Adapted (i.e. biased) bottom[0] score values. It is just to find labels.
   Blob<Dtype> adapted_bottom_;
