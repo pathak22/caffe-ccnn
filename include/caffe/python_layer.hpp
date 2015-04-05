@@ -58,7 +58,10 @@ class PythonLayer : public Layer<Dtype> {
       throw;
     }
   }
-
+  
+  virtual DiagonalAffineMap<Dtype> coord_map() {
+    return DiagonalAffineMap<Dtype>::identity(2);
+  }
  private:
   PyObject* self_;
 };
