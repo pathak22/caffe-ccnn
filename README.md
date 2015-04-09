@@ -21,6 +21,7 @@ Additional Functionalitites over Master :
 - Repack Layer (Philipp)
 - Solver as string in python layer (Philipp)
 - Base Convolution Layer Modified (Philipp) 
+- Repacking Layer for denser stride network (Philipp)
 
 Consider adding :
 
