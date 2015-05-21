@@ -577,6 +577,47 @@ class PermutohedralFilterLayer : public Layer<Dtype> {
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 };
 
+/**
+ * Implements forward Dense CRF layer. It is inspired by Philipp Krahenbuhl's NIPS 2011.
+ *
+ * NOTE: does not implement Backwards operation.
+ */
+template <typename Dtype>
+class DenseCRFLayer : public Layer<Dtype> {
+
+ public:
+  explicit DenseCRFLayer(const LayerParameter& param)
+      : Layer<Dtype>(param) {}
+  virtual void DenseInference( unsigned char * im, float * unary, Dtype *res, int W, int H, int M);
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "DenseCRF"; }
+  virtual inline int ExactNumBottomBlobs() const { return 2; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+    NOT_IMPLEMENTED;
+  }
+
+  float x_gauss_;
+  float y_gauss_;
+  float wt_gauss_;
+
+  float x_bilateral_;
+  float y_bilateral_;
+  float r_bilateral_;
+  float g_bilateral_;
+  float b_bilateral_;
+  float wt_bilateral_;
+};
+
 }  // namespace caffe
 
 
