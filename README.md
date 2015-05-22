@@ -11,9 +11,12 @@ See `future.sh` for details.
 
 Additional Functionalitites over Master :
 
-- EM Adapt MIL Loss Layer
+- My version of EM Adapt MIL Loss Layer
 - Background Weighted SoftmaxLossLayer
+- Test Time DenseCRF Layer Added (Philipp NIPS '11)
 - Permutohedral Filter Layer (DenseCRF)
+
+Included Philipp's Functionalities over Master :
 
 - Running Average Layer (Remains same across run: Philipp)
 - Statitical Loss Layer (Compute IOU : Only in Python Layer : Philipp) 
