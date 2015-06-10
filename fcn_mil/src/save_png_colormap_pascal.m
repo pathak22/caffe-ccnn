@@ -2,7 +2,7 @@
 
 clear all; close all; clc;
 
-dirAddress = '/mnt/a/pathak/fcn_mil_cache/visualized_output/seg12test_size/';
+dirAddress = '/mnt/a/pathak/fcn_mil_cache/visualized_output/seg12test_best/';
 inputImages = dir(fullfile(dirAddress,'results/VOC2012/Segmentation/comp6_test_cls/*.png'));
 
 cmap = VOClabelcolormap(256);
