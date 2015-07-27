@@ -15,6 +15,7 @@ Additional Functionalitites over Master :
 - Background Weighted SoftmaxLossLayer
 - Test Time DenseCRF Layer Added (Philipp NIPS '11)
 - Permutohedral Filter Layer (DenseCRF)
+- Some additional scripts in the folder ./my_script/
 
 Included Philipp's Functionalities over Master :
 
