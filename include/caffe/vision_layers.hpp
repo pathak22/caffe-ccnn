@@ -70,6 +70,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   int num_;
   int channels_;
   int pad_h_, pad_w_;
+  int hole_h_, hole_w_;
   int height_, width_;
   int group_;
   int num_output_;
@@ -80,21 +81,31 @@ class BaseConvolutionLayer : public Layer<Dtype> {
  private:
   // wrap im2col/col2im so we don't have to remember the (long) argument lists
   inline void conv_im2col_cpu(const Dtype* data, Dtype* col_buff) {
-    im2col_cpu(data, conv_in_channels_, conv_in_height_, conv_in_width_,
-        kernel_h_, kernel_w_, pad_h_, pad_w_, stride_h_, stride_w_, col_buff);
+    // im2col_cpu(data, conv_in_channels_, conv_in_height_, conv_in_width_,
+    //     kernel_h_, kernel_w_, pad_h_, pad_w_, stride_h_, stride_w_, col_buff);
+    im2col_cpu(data, 1, conv_in_channels_, conv_in_height_, conv_in_width_,
+            kernel_h_, kernel_w_, pad_h_, pad_w_,
+      stride_h_, stride_w_, hole_h_, hole_w_,
+            col_buff);
   }
   inline void conv_col2im_cpu(const Dtype* col_buff, Dtype* data) {
-    col2im_cpu(col_buff, conv_in_channels_, conv_in_height_, conv_in_width_,
-        kernel_h_, kernel_w_, pad_h_, pad_w_, stride_h_, stride_w_, data);
+    // col2im_cpu(col_buff, conv_in_channels_, conv_in_height_, conv_in_width_,
+    //     kernel_h_, kernel_w_, pad_h_, pad_w_, stride_h_, stride_w_, data);
+    col2im_cpu(col_buff, 1, conv_in_channels_, conv_in_height_, conv_in_width_,
+        kernel_h_, kernel_w_, pad_h_, pad_w_, stride_h_, stride_w_, hole_h_, hole_w_, data);
   }
 #ifndef CPU_ONLY
   inline void conv_im2col_gpu(const Dtype* data, Dtype* col_buff) {
-    im2col_gpu(data, conv_in_channels_, conv_in_height_, conv_in_width_,
-        kernel_h_, kernel_w_, pad_h_, pad_w_, stride_h_, stride_w_, col_buff);
+    // im2col_gpu(data, conv_in_channels_, conv_in_height_, conv_in_width_,
+    //     kernel_h_, kernel_w_, pad_h_, pad_w_, stride_h_, stride_w_, col_buff);
+    im2col_gpu(data, 1, conv_in_channels_, conv_in_height_, conv_in_width_,
+        kernel_h_, kernel_w_, pad_h_, pad_w_, stride_h_, stride_w_, hole_h_, hole_w_, col_buff);
   }
   inline void conv_col2im_gpu(const Dtype* col_buff, Dtype* data) {
-    col2im_gpu(col_buff, conv_in_channels_, conv_in_height_, conv_in_width_,
-        kernel_h_, kernel_w_, pad_h_, pad_w_, stride_h_, stride_w_, data);
+    // col2im_gpu(col_buff, conv_in_channels_, conv_in_height_, conv_in_width_,
+    //     kernel_h_, kernel_w_, pad_h_, pad_w_, stride_h_, stride_w_, data);
+    col2im_gpu(col_buff, 1, conv_in_channels_, conv_in_height_, conv_in_width_,
+        kernel_h_, kernel_w_, pad_h_, pad_w_, stride_h_, stride_w_, hole_h_, hole_w_, data);
   }
 #endif
 
@@ -145,6 +156,9 @@ class ConvolutionLayer : public BaseConvolutionLayer<Dtype> {
    *  convolution, given by pad for equal dimensions or pad_h and pad_w for
    *  different padding. Input padding is computed implicitly instead of
    *  actually padding.
+   *  - hole / hole_h / hole_w (\b optional, default 1). Stride
+   *  between consecutive filter taps before performing convolution.
+   *  This is aka atrous algorithm in the context of undecimated wavelet transform.
    *  - group (\b optional, default 1). The number of filter groups. Group
    *  convolution is a method for reducing parameterization by selectively
    *  connecting input and output channels. The input and output channel dimensions must be divisible
@@ -164,7 +178,9 @@ class ConvolutionLayer : public BaseConvolutionLayer<Dtype> {
 
   virtual inline const char* type() const { return "Convolution"; }
   virtual inline DiagonalAffineMap<Dtype> coord_map() {
-    return FilterMap<Dtype>(this->kernel_h_, this->kernel_w_, this->stride_h_,
+    const int kernel_h_eff = this->kernel_h_ + (this->kernel_h_ - 1) * (this->hole_h_ - 1);
+    const int kernel_w_eff = this->kernel_w_ + (this->kernel_w_ - 1) * (this->hole_w_ - 1);
+    return FilterMap<Dtype>(kernel_h_eff, kernel_w_eff, this->stride_h_,
         this->stride_w_, this->pad_h_, this->pad_w_).inv();
   }
 
@@ -202,7 +218,9 @@ class DeconvolutionLayer : public BaseConvolutionLayer<Dtype> {
       : BaseConvolutionLayer<Dtype>(param) {}
   virtual inline const char* type() const { return "Deconvolution"; }
   virtual inline DiagonalAffineMap<Dtype> coord_map() {
-    return FilterMap<Dtype>(this->kernel_h_, this->kernel_w_, this->stride_h_,
+    const int kernel_h_eff = this->kernel_h_ + (this->kernel_h_ - 1) * (this->hole_h_ - 1);
+    const int kernel_w_eff = this->kernel_w_ + (this->kernel_w_ - 1) * (this->hole_w_ - 1);
+    return FilterMap<Dtype>(kernel_h_eff, kernel_w_eff, this->stride_h_,
         this->stride_w_, this->pad_h_, this->pad_w_);
   }
 
@@ -300,6 +318,7 @@ class Im2colLayer : public Layer<Dtype> {
   int channels_;
   int height_, width_;
   int pad_h_, pad_w_;
+  int hole_h_, hole_w_;
 };
 
 // Forward declare PoolingLayer and SplitLayer for use in LRNLayer.
