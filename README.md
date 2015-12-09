@@ -1,34 +1,17 @@
-# caffe-pathak : fcn-mil branch
-==============================
+# caffe-ccnn
+=============
 
-This is the fcn-mil branch. It is developed over fcn branch of Evan's Caffe.
-This is a pre-release Caffe branch for fully convolutional networks.
+This is the branch of caffe created for [CCNN](https://github.com/pathak22/ccnn) project.
+This is a pre-release Caffe branch.
 This includes several unmerged PRs and has no guarantees.
 
 Everything here is subject to change, including the history of this branch.
-
 See `future.sh` for details.
 
-Additional Functionalitites over Master :
+Some Key Functionalities:
 
-- My version of EM Adapt MIL Loss Layer
-- Background Weighted SoftmaxLossLayer
-- Test Time DenseCRF Layer Added (Philipp NIPS '11)
-- Permutohedral Filter Layer (DenseCRF)
+- Test Time DenseCRF Layer originally described in this [paper](http://graphics.stanford.edu/projects/densecrf/).
+- Atrous or 'hole' algorithm described in the [arxiv paper](http://arxiv.org/abs/1412.7062). **Disclaimer**: The Atrous code in this repository is modification of the original implementation, released [here](https://bitbucket.org/deeplab/deeplab-public/).
+- A rough version of MIL based Softmax Loss Layer for weakly supervised tasks.
+- Background Weighted SoftmaxLossLayer.
 - Some additional scripts in the folder ./my_script/
-
-Included Philipp's Functionalities over Master :
-
-- Running Average Layer (Remains same across run: Philipp)
-- Statitical Loss Layer (Compute IOU : Only in Python Layer : Philipp) 
-- Temp Memory Layer (Philipp)
-- Repack Layer (Philipp)
-- Solver as string in python layer (Philipp)
-- Base Convolution Layer Modified (Philipp) 
-- Repacking Layer for denser stride network (Philipp)
-
-Consider adding :
-
-- https://github.com/BVLC/caffe/pull/1977 for saving memory
-- https://github.com/BVLC/caffe/pull/1733 for pycaffe net specification
-- https://github.com/BVLC/caffe/pull/2016 for saving memory during test time

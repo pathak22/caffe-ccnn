@@ -568,35 +568,6 @@ class RepackLayer : public Layer<Dtype> {
 };
 
 /**
- * @brief This layer implements the fast high-dimensional gaussian filtering 
- *        based on perumtohedral lattice. This was described in Adams et. al. 2010
- *        and used for dense crf implementation in Kraehenbuehl et. al. 2013
- */
-template <typename Dtype>
-class PermutohedralFilterLayer : public Layer<Dtype> {
- public:
-  explicit PermutohedralFilterLayer(const LayerParameter& param)
-      : Layer<Dtype>(param) {}
-  // virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-  //     const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-
-  virtual inline const char* type() const { return "PermutohedralFilter"; }
-  virtual inline int ExactNumBottomBlobs() const { return 2; }
-  virtual inline int ExactNumTopBlobs() const { return 1; }
-  virtual inline DiagonalAffineMap<Dtype> coord_map() {
-    return DiagonalAffineMap<Dtype>::identity(2);
-  }
-
- protected:
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
-};
-
-/**
  * Implements forward Dense CRF layer. It is inspired by Philipp Krahenbuhl's NIPS 2011.
  *
  * NOTE: does not implement Backwards operation.
